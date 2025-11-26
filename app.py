@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from database import init_database, save_record, find_record, get_all_records
+from database import init_database, save_record, find_record, get_all_records, find_record_by_nombre, find_record_by_id_cliente
 
 # Initialize database
 init_database()
@@ -252,23 +252,55 @@ if buscar_bd:
     if not any([search_id, search_nombre, search_nit_cc]):
         st.markdown('<div class="error-message">Por favor ingrese al menos un criterio de búsqueda</div>', unsafe_allow_html=True)
     else:
-        # In a real implementation, you would search by these criteria
-        # For now, we'll search by ID if provided
+        record = None
+        search_type = ""
+        
+        # Search by ID (primary key)
         if search_id:
             record = find_record(search_id)
-            if record:
-                # Update session state with found record
-                st.session_state.form_data = {
-                    'nombre_cliente': record.get('nombre_cliente', ''),
-                    'id_cliente': record.get('id_cliente', ''),
-                    'comision_seguro': str(record.get('comision_seguro', '')),
-                    'reaseguro_proporcional': str(record.get('reaseguro_proporcional', '')),
-                    'comision_reaseguro': str(record.get('comision_reaseguro', ''))
-                }
-                st.markdown(f'<div class="success-message">✅ Registro encontrado! Cliente: {record.get("nombre_cliente", "")}</div>', unsafe_allow_html=True)
-                st.rerun()
-            else:
-                st.markdown('<div class="error-message">❌ No se encontró ningún registro con ese ID</div>', unsafe_allow_html=True)
+            search_type = f"ID: {search_id}"
+        
+        # Search by Nombre Completo (Nombre Cliente)
+        elif search_nombre:
+            records = find_record_by_nombre(search_nombre)
+            if records:
+                if len(records) == 1:
+                    record = records[0]
+                    search_type = f"Nombre: {search_nombre}"
+                else:
+                    st.markdown(f'<div class="success-message">✅ Se encontraron {len(records)} registros con el nombre "{search_nombre}"</div>', unsafe_allow_html=True)
+                    # Show multiple records and let user choose
+                    for i, rec in enumerate(records, 1):
+                        st.write(f"{i}. ID: {rec['id']} - {rec['nombre_cliente']} - {rec['id_cliente']}")
+                    return
+        
+        # Search by NIT/CC (ID Cliente)
+        elif search_nit_cc:
+            records = find_record_by_id_cliente(search_nit_cc)
+            if records:
+                if len(records) == 1:
+                    record = records[0]
+                    search_type = f"NIT/CC: {search_nit_cc}"
+                else:
+                    st.markdown(f'<div class="success-message">✅ Se encontraron {len(records)} registros con el NIT/CC "{search_nit_cc}"</div>', unsafe_allow_html=True)
+                    # Show multiple records and let user choose
+                    for i, rec in enumerate(records, 1):
+                        st.write(f"{i}. ID: {rec['id']} - {rec['nombre_cliente']} - {rec['id_cliente']}")
+                    return
+        
+        if record:
+            # Update session state with found record
+            st.session_state.form_data = {
+                'nombre_cliente': record.get('nombre_cliente', ''),
+                'id_cliente': record.get('id_cliente', ''),
+                'comision_seguro': str(record.get('comision_seguro', '')),
+                'reaseguro_proporcional': str(record.get('reaseguro_proporcional', '')),
+                'comision_reaseguro': str(record.get('comision_reaseguro', ''))
+            }
+            st.markdown(f'<div class="success-message">✅ Registro encontrado por {search_type}! Cliente: {record.get("nombre_cliente", "")}</div>', unsafe_allow_html=True)
+            st.rerun()
+        else:
+            st.markdown('<div class="error-message">❌ No se encontró ningún registro con los criterios especificados</div>', unsafe_allow_html=True)
 
 if limpiar_celdas:
     # Clear all fields
