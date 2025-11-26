@@ -319,8 +319,18 @@ with st.expander("📋 Ver Todos los Registros"):
         display_df['comision_reaseguro'] = display_df['comision_reaseguro'].apply(lambda x: f"{x}%")
         display_df['created_date'] = pd.to_datetime(display_df['created_date']).dt.strftime('%Y-%m-%d %H:%M')
         
+        # Safe column selection - only use columns that exist
+        available_columns = []
+        desired_columns = ['id', 'nombre_cliente', 'id_cliente', 'ano', 'comision_seguro', 'reaseguro_proporcional', 'comision_reaseguro', 'created_date']
+        
+        for col in desired_columns:
+            if col in display_df.columns:
+                available_columns.append(col)
+            else:
+                st.warning(f"⚠️ Columna '{col}' no encontrada en la base de datos")
+        
         st.dataframe(
-            display_df[['id', 'nombre_cliente', 'id_cliente', 'ano', 'comision_seguro', 'reaseguro_proporcional', 'comision_reaseguro', 'created_date']],
+            display_df[available_columns],
             use_container_width=True
         )
         
@@ -333,12 +343,4 @@ with st.expander("📋 Ver Todos los Registros"):
             mime="text/csv",
         )
     else:
-        st.info("No hay registros en la base de datos.")
-
-# Sidebar information
-st.sidebar.markdown("---")
-st.sidebar.subheader("Información")
-st.sidebar.info(
-    "Sistema de cotización para transportes Allianz. "
-    "Guarde registros, busque por diferentes criterios o consulte todos los registros existentes."
-)
+        st.info("No hay registros en la base de datos. Guarde el primer registro para comenzar.")
