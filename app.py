@@ -103,6 +103,7 @@ if 'form_data' not in st.session_state:
     st.session_state.form_data = {
         'nombre_cliente': '',
         'id_cliente': '',
+        'ano': '',
         'comision_seguro': '',
         'reaseguro_proporcional': '',
         'comision_reaseguro': ''
@@ -134,6 +135,17 @@ with col1:
             "ID Cliente", 
             value=st.session_state.form_data['id_cliente'],
             placeholder="Ingrese el ID del cliente",
+            label_visibility="collapsed"
+        )
+    
+    col2_3, col2_4 = st.columns([1, 2])
+    with col2_3:
+        st.markdown('<div class="field-label">Año *</div>', unsafe_allow_html=True)
+    with col2_4:
+        ano = st.text_input(
+            "Año", 
+            value=st.session_state.form_data['ano'],
+            placeholder="Ej: 2024",
             label_visibility="collapsed"
         )
     
@@ -220,13 +232,24 @@ with col2:
             label_visibility="collapsed"
         )
     
+    col9_1, col9_2 = st.columns([1, 2])
+    with col9_1:
+        st.markdown('<div class="field-label">Año</div>', unsafe_allow_html=True)
+    with col9_2:
+        search_ano = st.text_input(
+            "Año", 
+            placeholder="Buscar por año",
+            key="search_ano",
+            label_visibility="collapsed"
+        )
+    
     # Search button
     buscar_bd = st.button("🔎 Buscar en Base de Datos", use_container_width=True)
 
 # Handle button actions
 if guardar_registro:
     # Validate required fields
-    if not all([nombre_cliente, id_cliente, comision_seguro, reaseguro_proporcional, comision_reaseguro]):
+    if not all([nombre_cliente, id_cliente, ano, comision_seguro, reaseguro_proporcional, comision_reaseguro]):
         st.markdown('<div class="error-message">Por favor complete todos los campos obligatorios (*)</div>', unsafe_allow_html=True)
     else:
         try:
@@ -234,6 +257,7 @@ if guardar_registro:
             record_data = {
                 'nombre_cliente': nombre_cliente,
                 'id_cliente': id_cliente,
+                'ano': int(ano),
                 'comision_seguro': float(comision_seguro),
                 'reaseguro_proporcional': float(reaseguro_proporcional),
                 'comision_reaseguro': float(comision_reaseguro),
@@ -246,10 +270,10 @@ if guardar_registro:
             st.markdown(f'<div class="success-message">✅ Registro guardado exitosamente! ID: {record_id}</div>', unsafe_allow_html=True)
             
         except ValueError:
-            st.markdown('<div class="error-message">Error: Los porcentajes deben ser valores numéricos válidos</div>', unsafe_allow_html=True)
+            st.markdown('<div class="error-message">Error: Los porcentajes y año deben ser valores numéricos válidos</div>', unsafe_allow_html=True)
 
 if buscar_bd:
-    if not any([search_id, search_nombre, search_nit_cc]):
+    if not any([search_id, search_nombre, search_nit_cc, search_ano]):
         st.markdown('<div class="error-message">Por favor ingrese al menos un criterio de búsqueda</div>', unsafe_allow_html=True)
     else:
         # In a real implementation, you would search by these criteria
@@ -261,6 +285,7 @@ if buscar_bd:
                 st.session_state.form_data = {
                     'nombre_cliente': record.get('nombre_cliente', ''),
                     'id_cliente': record.get('id_cliente', ''),
+                    'ano': str(record.get('ano', '')),
                     'comision_seguro': str(record.get('comision_seguro', '')),
                     'reaseguro_proporcional': str(record.get('reaseguro_proporcional', '')),
                     'comision_reaseguro': str(record.get('comision_reaseguro', ''))
@@ -275,6 +300,7 @@ if limpiar_celdas:
     st.session_state.form_data = {
         'nombre_cliente': '',
         'id_cliente': '',
+        'ano': '',
         'comision_seguro': '',
         'reaseguro_proporcional': '',
         'comision_reaseguro': ''
@@ -294,7 +320,7 @@ with st.expander("📋 Ver Todos los Registros"):
         display_df['created_date'] = pd.to_datetime(display_df['created_date']).dt.strftime('%Y-%m-%d %H:%M')
         
         st.dataframe(
-            display_df[['id', 'nombre_cliente', 'id_cliente', 'comision_seguro', 'reaseguro_proporcional', 'comision_reaseguro', 'created_date']],
+            display_df[['id', 'nombre_cliente', 'id_cliente', 'ano', 'comision_seguro', 'reaseguro_proporcional', 'comision_reaseguro', 'created_date']],
             use_container_width=True
         )
         
