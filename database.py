@@ -14,6 +14,7 @@ def init_database():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nombre_cliente TEXT NOT NULL,
             id_cliente TEXT NOT NULL,
+            ano INTEGER NOT NULL,
             comision_seguro REAL NOT NULL,
             reaseguro_proporcional REAL NOT NULL,
             comision_reaseguro REAL NOT NULL,
@@ -35,11 +36,12 @@ def save_record(record_data):
     # Insert record
     c.execute('''
         INSERT INTO pricing_records 
-        (nombre_cliente, id_cliente, comision_seguro, reaseguro_proporcional, comision_reaseguro, nit_cc)
-        VALUES (?, ?, ?, ?, ?, ?)
+        (nombre_cliente, id_cliente, ano, comision_seguro, reaseguro_proporcional, comision_reaseguro, nit_cc)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
     ''', (
         record_data['nombre_cliente'],
         record_data['id_cliente'],
+        record_data['ano'],
         record_data['comision_seguro'],
         record_data['reaseguro_proporcional'],
         record_data['comision_reaseguro'],
@@ -65,7 +67,7 @@ def find_record(record_id):
     conn.close()
     
     if record:
-        columns = ['id', 'nombre_cliente', 'id_cliente', 'comision_seguro', 'reaseguro_proporcional', 
+        columns = ['id', 'nombre_cliente', 'id_cliente', 'ano', 'comision_seguro', 'reaseguro_proporcional', 
                   'comision_reaseguro', 'nit_cc', 'created_date', 'last_modified']
         return dict(zip(columns, record))
     return None
