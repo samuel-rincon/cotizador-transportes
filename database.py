@@ -106,6 +106,41 @@ def find_record_by_id_cliente(id_cliente):
         return [dict(zip(columns, record)) for record in records]
     return None
 
+def update_record(record_id, record_data):
+    """Update an existing record in the database"""
+    conn = sqlite3.connect('pricing.db')
+    c = conn.cursor()
+    
+    try:
+        # Update record
+        c.execute('''
+            UPDATE pricing_records 
+            SET nombre_cliente = ?, 
+                id_cliente = ?, 
+                comision_seguro = ?, 
+                reaseguro_proporcional = ?, 
+                comision_reaseguro = ?, 
+                nit_cc = ?,
+                last_modified = CURRENT_TIMESTAMP
+            WHERE id = ?
+        ''', (
+            record_data['nombre_cliente'],
+            record_data['id_cliente'],
+            record_data['comision_seguro'],
+            record_data['reaseguro_proporcional'],
+            record_data['comision_reaseguro'],
+            record_data.get('nit_cc', ''),
+            record_id
+        ))
+        
+        conn.commit()
+        conn.close()
+        return True
+    except Exception as e:
+        print(f"Error updating record: {e}")
+        conn.close()
+        return False
+
 def get_all_records():
     """Get all records for display"""
     conn = sqlite3.connect('pricing.db')
