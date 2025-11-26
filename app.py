@@ -254,6 +254,7 @@ if buscar_bd:
     else:
         record = None
         search_type = ""
+        multiple_records = None
         
         # Search by ID (primary key)
         if search_id:
@@ -268,11 +269,11 @@ if buscar_bd:
                     record = records[0]
                     search_type = f"Nombre: {search_nombre}"
                 else:
+                    multiple_records = records
                     st.markdown(f'<div class="success-message">✅ Se encontraron {len(records)} registros con el nombre "{search_nombre}"</div>', unsafe_allow_html=True)
                     # Show multiple records and let user choose
                     for i, rec in enumerate(records, 1):
                         st.write(f"{i}. ID: {rec['id']} - {rec['nombre_cliente']} - {rec['id_cliente']}")
-                    return
         
         # Search by NIT/CC (ID Cliente)
         elif search_nit_cc:
@@ -282,13 +283,14 @@ if buscar_bd:
                     record = records[0]
                     search_type = f"NIT/CC: {search_nit_cc}"
                 else:
+                    multiple_records = records
                     st.markdown(f'<div class="success-message">✅ Se encontraron {len(records)} registros con el NIT/CC "{search_nit_cc}"</div>', unsafe_allow_html=True)
                     # Show multiple records and let user choose
                     for i, rec in enumerate(records, 1):
                         st.write(f"{i}. ID: {rec['id']} - {rec['nombre_cliente']} - {rec['id_cliente']}")
-                    return
         
-        if record:
+        # If we have a single record to display
+        if record and not multiple_records:
             # Update session state with found record
             st.session_state.form_data = {
                 'nombre_cliente': record.get('nombre_cliente', ''),
@@ -299,7 +301,7 @@ if buscar_bd:
             }
             st.markdown(f'<div class="success-message">✅ Registro encontrado por {search_type}! Cliente: {record.get("nombre_cliente", "")}</div>', unsafe_allow_html=True)
             st.rerun()
-        else:
+        elif not record and not multiple_records:
             st.markdown('<div class="error-message">❌ No se encontró ningún registro con los criterios especificados</div>', unsafe_allow_html=True)
 
 if limpiar_celdas:
@@ -348,3 +350,4 @@ st.sidebar.info(
     "Sistema de cotización para transportes Allianz. "
     "Guarde registros, busque por diferentes criterios o consulte todos los registros existentes."
 )
+
