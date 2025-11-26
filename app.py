@@ -186,13 +186,13 @@ with col1:
     col1_1, col1_2, col1_3 = st.columns(3)
     
     with col1_1:
-        guardar_registro = st.button("💾 Guardar Registro", use_container_width=True)
+        guardar_registro = st.button("Guardar Registro", use_container_width=True)
     
     with col1_2:
-        actualizar_registro = st.button("🔄 Actualizar Registro", use_container_width=True)
+        actualizar_registro = st.button("Actualizar Registro", use_container_width=True)
     
     with col1_3:
-        limpiar_celdas = st.button("🧹 Limpiar Celdas", use_container_width=True)
+        limpiar_celdas = st.button("Limpiar Celdas", use_container_width=True)
 
 with col2:
     st.markdown('<div class="section-header">Búsqueda de Registros</div>', unsafe_allow_html=True)
@@ -232,7 +232,7 @@ with col2:
         )
     
     # Search button
-    buscar_bd = st.button("🔎 Buscar en Base de Datos", use_container_width=True)
+    buscar_bd = st.button("Buscar Registro", use_container_width=True)
 
 # Handle button actions
 if guardar_registro:
@@ -404,3 +404,4 @@ st.sidebar.info(
     "Sistema de cotización para transportes Allianz. "
     "Guarde registros, busque por diferentes criterios o consulte todos los registros existentes."
 )
+
