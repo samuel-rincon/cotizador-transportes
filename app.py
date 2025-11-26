@@ -8,7 +8,7 @@ init_database()
 # Page configuration
 st.set_page_config(
     page_title="Vicepresidencia Empresas Cotizador de Transportes Allianz",
-    page_icon="2477624-middle.ico",
+    page_icon="allianzlogo.ico",
     layout="wide"
 )
 
@@ -404,5 +404,6 @@ st.sidebar.info(
     "Sistema de cotización para transportes Allianz. "
     "Guarde registros, busque por diferentes criterios o consulte todos los registros existentes."
 )
+
 
 
