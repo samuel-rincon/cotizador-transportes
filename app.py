@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-from database import init_database, save_record, find_record, get_all_records, find_record_by_nombre, find_record_by_id_cliente
+from database import init_database, save_record, find_record, get_all_records, find_record_by_nombre, find_record_by_id_cliente, update_record
 
 # Initialize database
 init_database()
@@ -63,6 +63,13 @@ st.markdown("""
         border-radius: 0.5rem;
         margin: 1rem 0;
     }
+    .warning-message {
+        padding: 1rem;
+        background-color: #fff3cd;
+        color: #856404;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+    }
     .stApp {
         background-color: white;
     }
@@ -107,6 +114,10 @@ if 'form_data' not in st.session_state:
         'reaseguro_proporcional': '',
         'comision_reaseguro': ''
     }
+
+# Initialize session state for current record ID
+if 'current_record_id' not in st.session_state:
+    st.session_state.current_record_id = None
 
 # Create two main columns
 col1, col2 = st.columns([2, 1])
@@ -175,13 +186,13 @@ with col1:
     col1_1, col1_2, col1_3 = st.columns(3)
     
     with col1_1:
-        guardar_registro = st.button("Guardar Registro", use_container_width=True)
+        guardar_registro = st.button("💾 Guardar Registro", use_container_width=True)
     
     with col1_2:
-        buscar_registro = st.button("Buscar Registro", use_container_width=True)
+        actualizar_registro = st.button("🔄 Actualizar Registro", use_container_width=True)
     
     with col1_3:
-        limpiar_celdas = st.button("Limpiar Celdas", use_container_width=True)
+        limpiar_celdas = st.button("🧹 Limpiar Celdas", use_container_width=True)
 
 with col2:
     st.markdown('<div class="section-header">Búsqueda de Registros</div>', unsafe_allow_html=True)
@@ -248,6 +259,37 @@ if guardar_registro:
         except ValueError:
             st.markdown('<div class="error-message">Error: Los porcentajes deben ser valores numéricos válidos</div>', unsafe_allow_html=True)
 
+if actualizar_registro:
+    # Check if we have a current record to update
+    if st.session_state.current_record_id is None:
+        st.markdown('<div class="error-message">❌ No hay un registro cargado para actualizar. Primero busque un registro existente.</div>', unsafe_allow_html=True)
+    else:
+        # Validate required fields
+        if not all([nombre_cliente, id_cliente, comision_seguro, reaseguro_proporcional, comision_reaseguro]):
+            st.markdown('<div class="error-message">Por favor complete todos los campos obligatorios (*)</div>', unsafe_allow_html=True)
+        else:
+            try:
+                # Prepare record data for update
+                record_data = {
+                    'nombre_cliente': nombre_cliente,
+                    'id_cliente': id_cliente,
+                    'comision_seguro': float(comision_seguro),
+                    'reaseguro_proporcional': float(reaseguro_proporcional),
+                    'comision_reaseguro': float(comision_reaseguro),
+                    'nit_cc': search_nit_cc
+                }
+                
+                # Update the record in database
+                success = update_record(st.session_state.current_record_id, record_data)
+                
+                if success:
+                    st.markdown(f'<div class="success-message">✅ Registro actualizado exitosamente! ID: {st.session_state.current_record_id}</div>', unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="error-message">❌ Error al actualizar el registro</div>', unsafe_allow_html=True)
+                
+            except ValueError:
+                st.markdown('<div class="error-message">Error: Los porcentajes deben ser valores numéricos válidos</div>', unsafe_allow_html=True)
+
 if buscar_bd:
     if not any([search_id, search_nombre, search_nit_cc]):
         st.markdown('<div class="error-message">Por favor ingrese al menos un criterio de búsqueda</div>', unsafe_allow_html=True)
@@ -299,7 +341,11 @@ if buscar_bd:
                 'reaseguro_proporcional': str(record.get('reaseguro_proporcional', '')),
                 'comision_reaseguro': str(record.get('comision_reaseguro', ''))
             }
+            # Store the current record ID for potential updates
+            st.session_state.current_record_id = record.get('id')
+            
             st.markdown(f'<div class="success-message">✅ Registro encontrado por {search_type}! Cliente: {record.get("nombre_cliente", "")}</div>', unsafe_allow_html=True)
+            st.markdown('<div class="warning-message">⚠️ Ahora puede modificar los datos y hacer clic en "Actualizar Registro" para guardar los cambios.</div>', unsafe_allow_html=True)
             st.rerun()
         elif not record and not multiple_records:
             st.markdown('<div class="error-message">❌ No se encontró ningún registro con los criterios especificados</div>', unsafe_allow_html=True)
@@ -313,7 +359,15 @@ if limpiar_celdas:
         'reaseguro_proporcional': '',
         'comision_reaseguro': ''
     }
+    # Clear current record ID
+    st.session_state.current_record_id = None
     st.rerun()
+
+# Display current record info if any
+if st.session_state.current_record_id:
+    st.sidebar.markdown("---")
+    st.sidebar.subheader("Registro Actual")
+    st.sidebar.info(f"**ID:** {st.session_state.current_record_id}\n\n**Modo:** Edición")
 
 # Display all records in an expandable section
 with st.expander("📋 Ver Todos los Registros"):
@@ -350,4 +404,3 @@ st.sidebar.info(
     "Sistema de cotización para transportes Allianz. "
     "Guarde registros, busque por diferentes criterios o consulte todos los registros existentes."
 )
-
