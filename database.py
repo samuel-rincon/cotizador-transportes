@@ -5,10 +5,15 @@ import os
 
 def init_database():
     """Initialize the database and create tables if they don't exist"""
+    # Force recreation of database to ensure new schema
+    if os.path.exists('pricing.db'):
+        os.remove('pricing.db')
+        print("Removed old database file - creating new one with updated schema")
+    
     conn = sqlite3.connect('pricing.db')
     c = conn.cursor()
     
-    # ONLY create table if it doesn't exist - NO DROP TABLE
+    # Create table with new schema including 'ano'
     c.execute('''
         CREATE TABLE IF NOT EXISTS pricing_records (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -26,7 +31,7 @@ def init_database():
     
     conn.commit()
     conn.close()
-    print("Database checked/initialized successfully")
+    print("Database initialized successfully with new schema including 'ano' column")
 
 def save_record(record_data):
     """Save a new record to the database"""
@@ -78,5 +83,3 @@ def get_all_records():
     df = pd.read_sql('SELECT * FROM pricing_records ORDER BY created_date DESC', conn)
     conn.close()
     return df
-
-# Remove the __main__ section to prevent recreation on import
