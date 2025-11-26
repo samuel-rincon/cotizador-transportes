@@ -70,6 +70,42 @@ def find_record(record_id):
         return dict(zip(columns, record))
     return None
 
+def find_record_by_nombre(nombre_cliente):
+    """Find records by Nombre Cliente (partial match)"""
+    conn = sqlite3.connect('pricing.db')
+    c = conn.cursor()
+    
+    c.execute('''
+        SELECT * FROM pricing_records WHERE nombre_cliente LIKE ? ORDER BY id DESC
+    ''', (f'%{nombre_cliente}%',))
+    
+    records = c.fetchall()
+    conn.close()
+    
+    if records:
+        columns = ['id', 'nombre_cliente', 'id_cliente', 'comision_seguro', 'reaseguro_proporcional', 
+                  'comision_reaseguro', 'nit_cc', 'created_date', 'last_modified']
+        return [dict(zip(columns, record)) for record in records]
+    return None
+
+def find_record_by_id_cliente(id_cliente):
+    """Find records by ID Cliente (exact match)"""
+    conn = sqlite3.connect('pricing.db')
+    c = conn.cursor()
+    
+    c.execute('''
+        SELECT * FROM pricing_records WHERE id_cliente = ? ORDER BY id DESC
+    ''', (id_cliente,))
+    
+    records = c.fetchall()
+    conn.close()
+    
+    if records:
+        columns = ['id', 'nombre_cliente', 'id_cliente', 'comision_seguro', 'reaseguro_proporcional', 
+                  'comision_reaseguro', 'nit_cc', 'created_date', 'last_modified']
+        return [dict(zip(columns, record)) for record in records]
+    return None
+
 def get_all_records():
     """Get all records for display"""
     conn = sqlite3.connect('pricing.db')
